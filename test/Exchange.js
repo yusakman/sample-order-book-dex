@@ -55,6 +55,7 @@ describe("Exchange", () => {
       it('track the token deposit', async () => {
         expect(await token1.balanceOf(exchange.address)).to.equal(amount)
         expect(await exchange.tokens(token1.address, user1.address)).to.equal(amount)
+        expect(await exchange.balanceOf(token1.address, user1.address)).to.equal(amount)
       })
     });
 
