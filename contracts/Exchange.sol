@@ -20,6 +20,13 @@ contract Exchange {
         uint256 balance
     );
 
+    event TestWithdraw(
+        address token,
+        address user,
+        uint256 amount,
+        uint256 balance
+    );
+
     constructor(address _feeAccount, uint256 _feePercent) {
         feeAccount = _feeAccount;
         feePercent = _feePercent;
@@ -28,7 +35,7 @@ contract Exchange {
     // Deposit Tokens
     function depositToken(address _token, uint256 _amount) public {
         // Transfer token to exchange
-        Token(_token).transferFrom(msg.sender, address(this), _amount);
+        require(Token(_token).transferFrom(msg.sender, address(this), _amount));
         // Update user balance
         tokens[_token][msg.sender] = tokens[_token][msg.sender] + _amount;
         // Emit the event
@@ -37,7 +44,7 @@ contract Exchange {
 
     // Test Deposit Tokens : The test deposit tokens function
     function testDepositToken(address _token, uint256 _amount) public {
-        Token(_token).transferFrom(msg.sender, address(this), _amount);
+        require(Token(_token).transferFrom(msg.sender, address(this), _amount));
         tokens[_token][msg.sender] = tokens[_token][msg.sender] + _amount;
         emit TestDeposit(
             _token,
@@ -63,5 +70,22 @@ contract Exchange {
         returns (uint256)
     {
         return tokens[_token][_user];
+    }
+
+    //Withdraw Token
+    function testWithdrawToken(address _token, uint256 _amount) public {
+        require(tokens[_token][msg.sender] >= _amount);
+        //Withdraw token from exchange to user
+        Token(_token).transfer(msg.sender, _amount);
+        //Update user balance
+        tokens[_token][msg.sender] = tokens[_token][msg.sender] - _amount;
+
+        // Emit event
+        emit TestWithdraw(
+            _token,
+            msg.sender,
+            _amount,
+            tokens[_token][msg.sender]
+        );
     }
 }
