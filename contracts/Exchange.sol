@@ -7,10 +7,26 @@ import "./Token.sol";
 contract Exchange {
     address public feeAccount;
     uint256 public feePercent;
+    uint256 public orderCount;
 
     // This mapping here to know the amount of tokens user own in the exchange
     // Mapping from user address, to the token address, how much amount
     mapping(address => mapping(address => uint256)) public tokens;
+
+    // Orders mapping
+    mapping(uint256 => _Order) public orders;
+
+    // Struct
+    // Why using underscore, to avoid naming confict with the events, because we'll have event Order
+    struct _Order {
+        uint256 id;
+        address user;
+        address tokenGet;
+        uint256 amountGet;
+        address tokenGive;
+        uint256 amountGive;
+        uint256 timestamp;
+    }
 
     event Deposit(address token, address user, uint256 amount, uint256 balance);
     event TestDeposit(
@@ -86,6 +102,30 @@ contract Exchange {
             msg.sender,
             _amount,
             tokens[_token][msg.sender]
+        );
+    }
+
+    // MAKE AND CANCEL order
+
+    // Which parameter
+    // Token Give (The token you want to give)
+    // Token Get (The token you'll get)
+
+    function makeOrder(
+        address _tokenGet,
+        uint256 _amountGet,
+        address _tokenGive,
+        uint256 _amountGive
+    ) public {
+        orderCount = orderCount + 1;
+        orders[orderCount] = _Order(
+            orderCount,
+            msg.sender,
+            _tokenGet,
+            _amountGet,
+            _tokenGive,
+            _amountGive,
+            block.timestamp
         );
     }
 }

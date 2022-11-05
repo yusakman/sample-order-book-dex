@@ -15,7 +15,7 @@ describe("Exchange", () => {
     const Token = await ethers.getContractFactory("Token");
 
     token1 = await Token.deploy("Wonderful SBucks", "WSB", "1000000");
-    token2 = await Token.deploy("Token 2", "TKN2", "1000");
+    token2 = await Token.deploy("Mock Dai", "MDAI", "1000000");
 
     accounts = await ethers.getSigners();
     deployer = accounts[0];
@@ -217,6 +217,42 @@ describe("Exchange", () => {
       expect(await exchange.balanceOf(token1.address, user1.address)).to.equal(
         amount
       );
+    });
+  });
+
+  describe("Make Order", () => {
+    let transaction, result;
+
+    let amountGet = tokens(5);
+    let amountGive = tokens(5);
+    let amount = tokens(100);
+
+    beforeEach(async () => {
+      // Approve token
+      transaction = await token1
+        .connect(user1)
+        .approve(exchange.address, amount);
+      // Deposit Tokens
+      transaction = await exchange
+        .connect(user1)
+        .depositToken(token1.address, amount);
+      result = await transaction.wait();
+
+      // Make order
+      transaction = await exchange
+        .connect(user1)
+        .makeOrder(token2.address, amountGet, token1.address, amountGive);
+      result = await transaction.wait();
+    });
+
+    describe("Success", () => {
+      it("tracks newly created order", async () => {
+        expect(await exchange.orderCount()).to.equal(1);
+      });
+    });
+
+    describe("Failure", () => {
+      // it("Trancks etc..", async () => {});
     });
   });
 });
