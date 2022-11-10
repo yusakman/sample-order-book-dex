@@ -15,7 +15,7 @@ describe("Exchange", () => {
     const Token = await ethers.getContractFactory("Token");
 
     token1 = await Token.deploy("Wonderful SBucks", "WSB", "1000000");
-    token2 = await Token.deploy("Mock Dai", "MDAI", "1000000");
+    token2 = await Token.deploy("Fake Dai", "FDAI", "1000000");
 
     accounts = await ethers.getSigners();
     deployer = accounts[0];
@@ -249,10 +249,25 @@ describe("Exchange", () => {
       it("tracks newly created order", async () => {
         expect(await exchange.orderCount()).to.equal(1);
       });
+
+      it('Emits make order event',async () => {
+        const event = await result.events[0];
+        expect(await event.event).to.equal('Order')
+
+        const args = await result.events[0].args;
+
+        expect(args.tokenGet).to.equal(token2.address)
+        expect(args.amountGet).to.equal(amountGet)
+        expect(args.tokenGive).to.equal(token1.address)
+        expect(args.amountGive).to.equal(amountGive)
+        
+      })
     });
 
     describe("Failure", () => {
-      // it("Trancks etc..", async () => {});
+      it("Rejects with no balance", async () => {
+        await expect(exchange.connect(user1).makeOrder(token1.address, tokens(1), token2.address, tokens(1))).to.be.reverted
+      });
     });
   });
 });
