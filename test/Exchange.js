@@ -1,6 +1,7 @@
 const { EtherscanProvider } = require("@ethersproject/providers");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+const { result } = require("lodash");
 
 const tokens = (n) => {
   return ethers.utils.parseUnits(n.toString(), "ether");
@@ -250,24 +251,82 @@ describe("Exchange", () => {
         expect(await exchange.orderCount()).to.equal(1);
       });
 
-      it('Emits make order event',async () => {
+      it("Emits make order event", async () => {
         const event = await result.events[0];
-        expect(await event.event).to.equal('Order')
+        expect(await event.event).to.equal("Order");
 
         const args = await result.events[0].args;
 
-        expect(args.tokenGet).to.equal(token2.address)
-        expect(args.amountGet).to.equal(amountGet)
-        expect(args.tokenGive).to.equal(token1.address)
-        expect(args.amountGive).to.equal(amountGive)
-        
-      })
+        expect(args.tokenGet).to.equal(token2.address);
+        expect(args.amountGet).to.equal(amountGet);
+        expect(args.tokenGive).to.equal(token1.address);
+        expect(args.amountGive).to.equal(amountGive);
+        expect(args.timestamp).to.at.least(1);
+      });
     });
 
     describe("Failure", () => {
       it("Rejects with no balance", async () => {
-        await expect(exchange.connect(user1).makeOrder(token1.address, tokens(1), token2.address, tokens(1))).to.be.reverted
+        await expect(
+          exchange
+            .connect(user1)
+            .makeOrder(token1.address, tokens(1), token2.address, tokens(1))
+        ).to.be.reverted;
       });
     });
+  });
+
+  describe("Order Actions", () => {
+    describe("Cancel Order", () => {
+      let transaction, result;
+
+      let amountGet = tokens(5);
+      let amountGive = tokens(5);
+      let amount = tokens(100);
+
+      beforeEach(async () => {
+        // Approve token
+        transaction = await token1
+          .connect(user1)
+          .approve(exchange.address, amount);
+        // Deposit Tokens
+        transaction = await exchange
+          .connect(user1)
+          .depositToken(token1.address, amount);
+        result = await transaction.wait();
+
+        // Make order
+        transaction = await exchange
+          .connect(user1)
+          .makeOrder(token2.address, amountGet, token1.address, amountGive);
+        result = await transaction.wait();
+
+        // Cancel Order
+        transaction = await exchange.connect(user1).cancelOrder(1);
+        result = await transaction.wait();
+      });
+
+      describe("Success", () => {
+        it("tracks the cancel order", async () => {
+          expect(await exchange.orderCancelled(1)).to.equal(true);
+        });
+
+        it("Emits cancel event", async () => {
+          const event = await result.events[0];
+          expect(await event.event).to.equal("Cancel");
+  
+          const args = await result.events[0].args;
+  
+          expect(args.tokenGet).to.equal(token2.address);
+          expect(args.amountGet).to.equal(amountGet);
+          expect(args.tokenGive).to.equal(token1.address);
+          expect(args.amountGive).to.equal(amountGive);
+          expect(args.timestamp).to.at.least(1);
+        });
+
+      });
+    });
+
+    describe("Filling Order", () => {});
   });
 });

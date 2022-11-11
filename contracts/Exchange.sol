@@ -13,6 +13,8 @@ contract Exchange {
 
     mapping(uint256 => _Order) public orders;
 
+    mapping(uint256 => bool) public orderCancelled;
+
     struct _Order {
         uint256 id;
         address user;
@@ -46,7 +48,17 @@ contract Exchange {
         uint256 amountGet,
         address tokenGive,
         uint256 amountGive,
-        uint256 timestap
+        uint256 timestamp
+    );
+
+    event Cancel(
+        uint256 orderCount,
+        address user,
+        address tokenGet,
+        uint256 amountGet,
+        address tokenGive,
+        uint256 amountGive,
+        uint256 timestamp
     );
 
     constructor(address _feeAccount, uint256 _feePercent) {
@@ -126,6 +138,26 @@ contract Exchange {
             _amountGet,
             _tokenGive,
             _amountGive,
+            block.timestamp
+        );
+    }
+
+    // Cancel Order
+    function cancelOrder(uint256 _id) public {
+        // Fetching the order
+        // Create a variable that store the order
+        _Order storage _order = orders[_id];
+
+        //Cancel the order
+        orderCancelled[_id] = true;
+
+        emit Cancel(
+            _order.id,
+            msg.sender,
+            _order.tokenGet,
+            _order.amountGet,
+            _order.tokenGive,
+            _order.amountGive,
             block.timestamp
         );
     }
