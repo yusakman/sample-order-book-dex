@@ -314,16 +314,26 @@ describe("Exchange", () => {
         it("Emits cancel event", async () => {
           const event = await result.events[0];
           expect(await event.event).to.equal("Cancel");
-  
+
           const args = await result.events[0].args;
-  
+
           expect(args.tokenGet).to.equal(token2.address);
           expect(args.amountGet).to.equal(amountGet);
           expect(args.tokenGive).to.equal(token1.address);
           expect(args.amountGive).to.equal(amountGive);
           expect(args.timestamp).to.at.least(1);
         });
+      });
 
+      describe("Failure", () => {
+
+        it("rejects invalid order ids", async () => {
+          await expect(exchange.connect(user1).cancelOrder(999)).to.be.reverted;
+        });
+
+        it("rejects invalid user", async () => {
+          await expect(exchange.connect(user2).cancelOrder(1)).to.be.reverted;
+        })
       });
     });
 
