@@ -31,7 +31,7 @@ describe("Exchange", () => {
 
     let transcation2 = await token2
       .connect(deployer)
-      .transfer(user2.address, tokens(10));
+      .transfer(user2.address, tokens(100));
     await transcation2.wait();
 
     exchange = await Exchange.deploy(feeAccount.address, feePercent);
@@ -326,17 +326,60 @@ describe("Exchange", () => {
       });
 
       describe("Failure", () => {
-
         it("rejects invalid order ids", async () => {
           await expect(exchange.connect(user1).cancelOrder(999)).to.be.reverted;
         });
 
         it("rejects invalid user", async () => {
           await expect(exchange.connect(user2).cancelOrder(1)).to.be.reverted;
-        })
+        });
       });
     });
 
-    describe("Filling Order", () => {});
+    describe("Filling Order", () => {
+      let transaction, result;
+
+      let amountGet = tokens(5);
+      let amountGive = tokens(5);
+      let amount = tokens(100);
+
+      beforeEach(async () => {
+        // Approve token
+        transaction = await token1
+          .connect(user1)
+          .approve(exchange.address, amount);
+        // Deposit Tokens User 1
+        transaction = await exchange
+          .connect(user1)
+          .depositToken(token1.address, amount);
+        result = await transaction.wait();
+
+        // Deposit Tokens User 2
+        transaction = await exchange
+          .connect(user2)
+          .depositToken(token2.address, amount);
+        result = await transaction.wait();
+
+        // Make order
+        transaction = await exchange
+          .connect(user1)
+          .makeOrder(token2.address, amountGet, token1.address, amountGive);
+        result = await transaction.wait();
+
+        // Fill Order
+        transaction = await exchange.connect(user2).fillOrder(1);
+        result = await transaction.wait();
+      });
+
+      describe("Success", () => {
+        it('Fill order and charges fees', async () => {
+
+        })
+      })
+
+      describe("Failuer", () => {
+
+      })
+    });
   });
 });
