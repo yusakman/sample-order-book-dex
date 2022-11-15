@@ -146,7 +146,7 @@ describe("Exchange", () => {
 
   describe("Test testWithdrawToken", () => {
     let transaction, result;
-    let amount = tokens(10);
+    let amount = tokens(100);
     beforeEach(async () => {
       // My mistake, we need to keep the deposit
       // Approve
@@ -224,8 +224,8 @@ describe("Exchange", () => {
   describe("Make Order", () => {
     let transaction, result;
 
-    let amountGet = tokens(5);
-    let amountGive = tokens(5);
+    let amountGet = tokens(10);
+    let amountGive = tokens(10);
     let amount = tokens(100);
 
     beforeEach(async () => {
@@ -277,30 +277,45 @@ describe("Exchange", () => {
   });
 
   describe("Order Actions", () => {
+    let transaction, result;
+
+    let amountGet = tokens(10);
+    let amountGive = tokens(10);
+    let depositUser2 = tokens(11);
+    let amount = tokens(100);
+
+    beforeEach(async () => {
+      // Approve token
+      transaction = await token1
+        .connect(user1)
+        .approve(exchange.address, amount);
+
+      // Deposit Tokens User 1
+      transaction = await exchange
+        .connect(user1)
+        .depositToken(token1.address, amountGive);
+      result = await transaction.wait();
+
+      // Approve Token 2
+      transaction = await token2
+        .connect(user2)
+        .approve(exchange.address, amount);
+
+      // Deposit Token 2
+      transaction = await exchange
+        .connect(user2)
+        .depositToken(token2.address, depositUser2);
+      result = await transaction.wait();
+
+      // Make order
+      transaction = await exchange
+        .connect(user1)
+        .makeOrder(token2.address, amountGet, token1.address, amountGive);
+      result = await transaction.wait();
+    });
+
     describe("Cancel Order", () => {
-      let transaction, result;
-
-      let amountGet = tokens(5);
-      let amountGive = tokens(5);
-      let amount = tokens(100);
-
       beforeEach(async () => {
-        // Approve token
-        transaction = await token1
-          .connect(user1)
-          .approve(exchange.address, amount);
-        // Deposit Tokens
-        transaction = await exchange
-          .connect(user1)
-          .depositToken(token1.address, amount);
-        result = await transaction.wait();
-
-        // Make order
-        transaction = await exchange
-          .connect(user1)
-          .makeOrder(token2.address, amountGet, token1.address, amountGive);
-        result = await transaction.wait();
-
         // Cancel Order
         transaction = await exchange.connect(user1).cancelOrder(1);
         result = await transaction.wait();
@@ -337,48 +352,60 @@ describe("Exchange", () => {
     });
 
     describe("Filling Order", () => {
-      let transaction, result;
-
-      let amountGet = tokens(5);
-      let amountGive = tokens(5);
-      let amount = tokens(100);
+      // Fill Order
 
       beforeEach(async () => {
-        // Approve token
-        transaction = await token1
-          .connect(user1)
-          .approve(exchange.address, amount);
-        // Deposit Tokens User 1
-        transaction = await exchange
-          .connect(user1)
-          .depositToken(token1.address, amount);
-        result = await transaction.wait();
-
-        // Deposit Tokens User 2
-        transaction = await exchange
-          .connect(user2)
-          .depositToken(token2.address, amount);
-        result = await transaction.wait();
-
-        // Make order
-        transaction = await exchange
-          .connect(user1)
-          .makeOrder(token2.address, amountGet, token1.address, amountGive);
-        result = await transaction.wait();
-
-        // Fill Order
         transaction = await exchange.connect(user2).fillOrder(1);
         result = await transaction.wait();
       });
 
       describe("Success", () => {
-        it('Fill order and charges fees', async () => {
+        it("execute the trade and charge fees", async () => {
+          // Token 1 Adddress, or TokenGive
+          expect(
+            await exchange.balanceOf(token1.address, user1.address)
+          ).to.equal(tokens(0));
+          expect(
+            await exchange.balanceOf(token1.address, user2.address)
+          ).to.equal(tokens(10));
+          expect(
+            await exchange.balanceOf(token1.address, feeAccount.address)
+          ).to.equal(tokens(0));
 
-        })
-      })
+          // Token 2 Address, or TokenGet
+          expect(
+            await exchange.balanceOf(token2.address, user1.address)
+          ).to.equal(tokens(10));
+          expect(
+            await exchange.balanceOf(token2.address, user2.address)
+          ).to.equal(tokens(0));
+          expect(
+            await exchange.balanceOf(token2.address, feeAccount.address)
+          ).to.equal(tokens(1));
+        });
 
-      describe("Failuer", () => {
+        it("updates filledOrder", async () => {
+          expect(await exchange.orderFilled(1)).to.equal(true);
+        });
 
+        it("emits the trade events", async () => {
+          const event = result.events[0];
+          expect(event.event).to.equal("Trade");
+
+          const args = event.args;
+          expect(args.id).to.equal(1);
+          expect(args.user).to.equal(user2.address);
+          expect(args.tokenGet).to.equal(token2.address);
+          expect(args.amountGet).to.equal(amountGet);
+          expect(args.tokenGive).to.equal(token1.address);
+          expect(args.amountGive).to.equal(amountGive);
+          expect(args.creator).to.equal(user1.address);
+          expect(args.timestamp).to.at.least(1);
+        });
+      });
+
+      describe("Failure", () => {
+        
       })
     });
   });

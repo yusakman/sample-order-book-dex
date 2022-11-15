@@ -14,6 +14,7 @@ contract Exchange {
     mapping(uint256 => _Order) public orders;
 
     mapping(uint256 => bool) public orderCancelled;
+    mapping(uint256 => bool) public orderFilled;
 
     struct _Order {
         uint256 id;
@@ -42,7 +43,7 @@ contract Exchange {
     );
 
     event Order(
-        uint256 orderCount,
+        uint256 id,
         address user,
         address tokenGet,
         uint256 amountGet,
@@ -52,12 +53,23 @@ contract Exchange {
     );
 
     event Cancel(
-        uint256 orderCount,
+        uint256 id,
         address user,
         address tokenGet,
         uint256 amountGet,
         address tokenGive,
         uint256 amountGive,
+        uint256 timestamp
+    );
+
+    event Trade(
+        uint256 id,
+        address user,
+        address tokenGet,
+        uint256 amountGet,
+        address tokenGive,
+        uint256 amountGive,
+        address creator,
         uint256 timestamp
     );
 
@@ -165,10 +177,13 @@ contract Exchange {
 
     // Fill Order
     function fillOrder(uint256 _id) public {
-        // Fetch the order
+
+        require(_id > 0 && _id <= orderCount, "Order doesn't exist");
+        require(!orderFilled[_id]);
+        require(!orderCancelled[_id]);
+
         _Order storage _order = orders[_id];
 
-        // Create a trade internal function to make it easier
         _trade(
             _order.id,
             _order.user,
@@ -177,6 +192,8 @@ contract Exchange {
             _order.tokenGive,
             _order.amountGive
         );
+
+        orderFilled[_order.id] = true;
     }
 
     function _trade(
@@ -204,5 +221,16 @@ contract Exchange {
         tokens[_tokenGive][msg.sender] =
             tokens[_tokenGive][msg.sender] +
             _amountGive;
+
+        emit Trade(
+            _orderId,
+            msg.sender,
+            _tokenGet,
+            _amountGet,
+            _tokenGive,
+            _amountGive,
+            _user,
+            block.timestamp
+        );
     }
 }
