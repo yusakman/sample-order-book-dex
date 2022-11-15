@@ -132,7 +132,7 @@ contract Exchange {
     ) public {
         require(balanceOf(_tokenGive, msg.sender) >= _amountGive);
 
-        orderCount = orderCount + 1;
+        orderCount++;
         orders[orderCount] = _Order(
             orderCount,
             msg.sender,
@@ -175,7 +175,6 @@ contract Exchange {
         );
     }
 
-    // Fill Order
     function fillOrder(uint256 _id) public {
 
         require(_id > 0 && _id <= orderCount, "Order doesn't exist");
@@ -206,13 +205,11 @@ contract Exchange {
     ) internal {
         uint256 _feeAmount = (_amountGet * feePercent) / 100;
 
-        // Swap tokens in the exchange
         tokens[_tokenGet][msg.sender] =
             tokens[_tokenGet][msg.sender] -
             (_amountGet + _feeAmount);
         tokens[_tokenGet][_user] = tokens[_tokenGet][_user] + _amountGet;
 
-        // Charges the fees
         tokens[_tokenGet][feeAccount] =
             tokens[_tokenGet][feeAccount] +
             _feeAmount;

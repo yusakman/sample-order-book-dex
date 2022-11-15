@@ -405,7 +405,18 @@ describe("Exchange", () => {
       });
 
       describe("Failure", () => {
-        
+        it("rejects invalid order", async () => {
+          const invalidOrder = 999;
+          await expect(exchange.connect(user2).fillOrder(invalidOrder)).to.be.reverted 
+        })
+
+        it("rejects already filled order", async () => {
+          await expect(exchange.connect(user2).fillOrder(1)).to.be.reverted
+        })
+
+        it("rejets cancel order", async () => {
+          await expect(exchange.connect(user2).cancelOrder(1)).to.be.reverted
+        })
       })
     });
   });
