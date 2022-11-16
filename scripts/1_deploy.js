@@ -18,11 +18,11 @@ async function main() {
 
   const weth = await Token.deploy('W-ETH', 'WETH', '1000000')
   await weth.deployed()
-  console.log(`WETH Deployed to: ${weth.address} `)
+  console.log(`wETH Deployed to: ${weth.address} `)
 
   const wdai = await Token.deploy('W-DAI', 'WDAI', '1000000')
   await wdai.deployed()
-  console.log(`WDAI Deployed to: ${wdai.address}`)
+  console.log(`wDAI Deployed to: ${wdai.address}`)
 
   const exchange = await Exchange.deploy(accounts[1].address, 10)
   await exchange.deployed()
