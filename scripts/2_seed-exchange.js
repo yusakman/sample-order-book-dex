@@ -1,4 +1,5 @@
 const { ethers } = require("hardhat");
+const config = require("../src/config.json");
 
 const tokens = (n) => {
   return ethers.utils.parseUnits(n.toString(), "ether");
@@ -13,17 +14,21 @@ async function main() {
   // Fetch all the accounts
   const accounts = await ethers.getSigners();
 
+  // Fetch network
+  const { chainId } = await ethers.provider.getNetwork();
+  console.log(`Using chainID: ${chainId}`)
+
   const NTST = await ethers.getContractAt(
     "Token",
-    "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+    config[31337].NTST.address
   );
   const wETH = await ethers.getContractAt(
     "Token",
-    "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+    config[31337].wETH.address
   );
   const wDAI = await ethers.getContractAt(
     "Token",
-    "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+    config[31337].wDAI.address
   );
 
   console.log(`NTST fetched: ${NTST.address}`);
@@ -33,7 +38,7 @@ async function main() {
   // Fetch the exchange contract
   const exchange = await ethers.getContractAt(
     "Exchange",
-    "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"
+    config[31337].exchange.address
   );
 
   console.log(`Exchange fetched: ${exchange.address}`);
@@ -133,21 +138,20 @@ async function main() {
     .makeOrder(wETH.address, amountGet, NTST.address, amountGive);
   result = await transaction.wait();
   console.log(`Make order from ${user1.address}`);
-  console.log(`Result ${result}`)
 
   // User 1 cancel order
   orderId = result.events[0].args.id;
-  console.log(`Order Id ${orderId}`)
+  console.log(`Order Id ${orderId}`);
   transaction = await exchange.connect(user1).cancelOrder(orderId);
   result = await transaction.wait();
-//   console.log(`Order ${orderId} cancelled by ${user1.address}`);s
+  console.log(`Order ${orderId} cancelled by ${user1.address}`);
 
   // Wait 1 second
   await wait(1);
 
- ///// Seed a Filled Order
- // User 1 make order
- transaction = await exchange
+  ///// Seed a Filled Order
+  // User 1 make order
+  transaction = await exchange
     .connect(user1)
     .makeOrder(wETH.address, amountGet, NTST.address, amountGive);
   result = await transaction.wait();
@@ -157,10 +161,62 @@ async function main() {
   orderId = result.events[0].args.id;
   transaction = await exchange.connect(user2).fillOrder(orderId);
   result = await transaction.wait();
-  console.log(`Filled order from ${user2.address}\n`)
+  console.log(`Filled order from ${user2.address}\n`);
 
   // Wait 1 second
   await wait(1);
+
+  // User 1 make order 2
+  transaction = await exchange
+    .connect(user1)
+    .makeOrder(wETH.address, amountGet, NTST.address, tokens(50));
+  result = await transaction.wait();
+  console.log(`Make order from ${user1.address}`);
+
+  // User 2 fill order
+  orderId = result.events[0].args.id;
+  transaction = await exchange.connect(user2).fillOrder(orderId);
+  result = await transaction.wait();
+  console.log(`Filled order from ${user2.address}\n`);
+
+  // User 1 make order 3
+  transaction = await exchange
+    .connect(user1)
+    .makeOrder(wETH.address, amountGet, NTST.address, tokens(150));
+  result = await transaction.wait();
+  console.log(`Make order from ${user1.address}`);
+
+  // User 2 fill order
+  orderId = result.events[0].args.id;
+  transaction = await exchange.connect(user2).fillOrder(orderId);
+  result = await transaction.wait();
+  console.log(`Filled order from ${user2.address}\n`);
+
+  // Wait 1 second
+  await wait(1);
+
+  //// Seed Open Order
+  // User 1 make 10 orders
+  for (let i = 1; i <= 10; i++) {
+    transaction = await exchange
+      .connect(user1)
+      .makeOrder(wETH.address, tokens(i * 5), NTST.address, tokens(10));
+    result = await transaction.wait();
+    console.log(`Made order from ${user1.address}\n`);
+    await wait(1);
+    // exchange.connect(user2).makeOrder(wDAI.address, tokens(i * 5), wETH.address, tokens(10));
+  }
+
+  // User 2 make 10 orders
+  for (let i = 1; i <= 10; i++) {
+    transaction = await exchange
+      .connect(user2)
+      .makeOrder(wDAI.address, tokens(10), wETH.address, tokens(i * 5));
+    result = await transaction.wait();
+    console.log(`Made order from ${user2.address}\n`);
+
+    await wait(1);
+  }
 }
 
 main()
