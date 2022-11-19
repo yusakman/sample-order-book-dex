@@ -6,35 +6,28 @@ import {
   loadProvider,
   loadNetwork,
   loadAccount,
-  loadToken,
+  loadTokens,
+  loadExchange,
 } from "../store/interactions";
 
 function App() {
   const dispatch = useDispatch();
 
   const loadBlockchainData = async () => {
-    await loadAccount(dispatch);
-
     // Connect ethers to the blockchain
     const provider = loadProvider(dispatch);
     const chainId = await loadNetwork(provider, dispatch);
 
-    //// Talk to Smart Contract
-    // Token Smart Contract
-    const ntst = await loadToken(
-      provider,
-      config[chainId].NTST.address,
-      dispatch
-    );
-    const symbol = await ntst.symbol();
-    console.log('Symbol: ', symbol)
+    await loadAccount(provider, dispatch);
 
-    // Exchange Smart Contract
-    // const exchange = new ethers.Contract(
-    //   config[31337].exchange.address,
-    //   Exchange_ABI,
-    //   provider
-    // );
+    // Token Smart Contract
+    const ntst = config[chainId].NTST;
+    const weth = config[chainId].wETH;
+    await loadTokens(provider, [ntst.address, weth.address], dispatch);
+
+    // Exchange
+    const exchange = config[chainId].exchange;
+    await loadExchange(provider, exchange.address, dispatch);
   };
 
   useEffect(() => {
