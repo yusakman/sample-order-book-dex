@@ -20,7 +20,16 @@ function App() {
     const provider = loadProvider(dispatch);
     const chainId = await loadNetwork(provider, dispatch);
 
-    await loadAccount(provider, dispatch);
+    // Reload page when network changed
+    window.ethereum.on('chainChanged', () => {
+      window.location.reload()
+    })
+
+
+    // Function from metamask
+    window.ethereum.on('accountsChanged', () => {
+      loadAccount(provider, dispatch)
+    })
 
     // Token Smart Contract
     const ntst = config[chainId].NTST;
