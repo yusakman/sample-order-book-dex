@@ -12,6 +12,7 @@ import {
 
 import Navbar from "./Navbar";
 import Markets from "./Markets";
+import Balance from "./Balance";
 
 function App() {
   const dispatch = useDispatch();
@@ -25,7 +26,6 @@ function App() {
     window.ethereum.on('chainChanged', () => {
       window.location.reload()
     })
-
 
     // Function from metamask
     window.ethereum.on('accountsChanged', () => {
@@ -53,7 +53,7 @@ function App() {
       <main className="exchange grid">
         <section className="exchange__section--left grid">
           <Markets></Markets>
-          {/* Markets */}
+          <Balance></Balance>
           {/* Balance */}
           {/* Order */}
         </section>

@@ -20,12 +20,12 @@ const Markets = () => {
       {chainId && (
         <select name="markets" id="markets" onChange={handlePair}>
           <option
-            value={`${config[chainId].NTST.address},${config[chainId].wETH.address}`}
+            value={config[chainId] && `${config[chainId].NTST.address},${config[chainId].wETH.address}`}
           >
             NTST / wETH
           </option>
           <option
-            value={`${config[chainId].NTST.address},${config[chainId].wDAI.address}`}
+            value={config[chainId] && `${config[chainId].NTST.address},${config[chainId].wDAI.address}`}
           >
             NTST / wDAI
           </option>
