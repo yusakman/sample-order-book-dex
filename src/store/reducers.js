@@ -28,7 +28,7 @@ export const tokens = (state = DEFAULT_TOKEN_STATE, action) => {
       return {
         ...state,
         loaded: true,
-        balances: [action.balance],
+        balances: [action.balances],
       };
     case "TOKEN_2_LOADED":
       return {
@@ -41,14 +41,23 @@ export const tokens = (state = DEFAULT_TOKEN_STATE, action) => {
       return {
         ...state,
         loaded: true,
-        balances: [...state.balance, action.balance],
+        balances: [...state.balances, action.balances],
       };
     default:
       return state;
   }
 };
 
-export const exchange = (state = { loaded: false, contract: {} }, action) => {
+const DEFAULT_EXCHANGE_STATE = {
+  loaded: false,
+  contract: {},
+  trasaction: {
+    isSuccessful: false,
+  },
+  events: []
+};
+
+export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
   switch (action.type) {
     case "EXCHANGE_LOADED":
       return {
@@ -60,13 +69,47 @@ export const exchange = (state = { loaded: false, contract: {} }, action) => {
       return {
         ...state,
         loaded: true,
-        balances: [action.balance],
+        balances: [action.balances],
       };
     case "EXCHANGE_TOKEN_2_BALANCE_LOADED":
       return {
         ...state,
         loaded: true,
-        balances: [...state.balance, action.balance],
+        balances: [...state.balances, action.balances],
+      };
+
+    // TRANSFERS
+    case "TRANSFER_REQUEST":
+      return {
+        ...state,
+        trasaction: {
+          transactionType: "Transfer",
+          isPending: true,
+          isSuccessful: false,
+        },
+        transferInProgress: true,
+      };
+    case "TRANSFER_SUCCESS":
+      return {
+        ...state,
+        trasaction: {
+          transactionType: "Transfer",
+          isPending: false,
+          isSuccessful: true,
+        },
+        transferInProgress: false,
+        events: [action.event, ...state.events],
+      };
+    case "TRANSFER_FAILED":
+      return {
+        ...state,
+        trasaction: {
+          transactionType: "Transfer",
+          isPending: false,
+          isSuccessful: false,
+          isError: true,
+        },
+        transferInProgress: false,
       };
     default:
       return state;

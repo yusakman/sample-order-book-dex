@@ -1,9 +1,6 @@
 import { ethers } from "ethers";
 import TOKEN_ABI from "../abis/Token.json";
 import EXCHANGE_ABI from "../abis/Exchange.json";
-// import { useSelector, useDispatch } from "react-redux";
-
-// const dispatch = useDispatch();
 
 export const loadProvider = (dispatch) => {
   const connection = new ethers.providers.Web3Provider(window.ethereum);
@@ -81,7 +78,16 @@ export const loadExchange = async (provider, address, dispatch) => {
   return exchange;
 };
 
-export const loadBalance = async (exchange, tokens, account, dispatch) => {
+export const subscribeToEvents = (exchange, dispatch) => {
+  exchange.on("Deposit", (token, user, amount, balance, event) => {
+    dispatch({
+      type: "TRANSFER_SUCCESS",
+      event: event,
+    });
+  });
+};
+
+export const loadBalances = async (exchange, tokens, account, dispatch) => {
   let balance = ethers.utils.formatUnits(
     await tokens[0].balanceOf(account),
     18
@@ -112,4 +118,40 @@ export const loadBalance = async (exchange, tokens, account, dispatch) => {
     type: "EXCHANGE_TOKEN_2_BALANCE_LOADED",
     balances: balance,
   });
+};
+
+export const transferTokens = async (
+  provider,
+  exchange,
+  transferType,
+  token,
+  amount,
+  dispatch
+) => {
+  let transaction;
+
+  dispatch({
+    type: "TRANSFER_REQUEST",
+  });
+
+  try {
+    const signer = await provider.getSigner();
+    const amountToTransfer = ethers.utils.parseUnits(amount.toString(), 18);
+    let result;
+
+    transaction = await token
+      .connect(signer)
+      .approve(exchange.address, amountToTransfer);
+    result = await transaction.wait();
+
+    transaction = await exchange
+      .connect(signer)
+      .depositToken(token.address, amountToTransfer);
+    result = await transaction.wait();
+    return result
+  } catch (error) {
+    dispatch({
+      type: "TRANSFER_FAILED",
+    });
+  }
 };
