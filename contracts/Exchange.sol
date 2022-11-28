@@ -35,6 +35,13 @@ contract Exchange {
         uint256 balance
     );
 
+    event Withdraw(
+        address token,
+        address user,
+        uint256 amount,
+        uint256 balance
+    ); 
+
     event TestWithdraw(
         address token,
         address user,
@@ -109,6 +116,19 @@ contract Exchange {
         returns (uint256)
     {
         return tokens[_token][_user];
+    }
+
+    function withdrawToken(address _token, uint256 _amount) public {
+        require(tokens[_token][msg.sender] >= _amount);
+        Token(_token).transfer(msg.sender, _amount);
+        tokens[_token][msg.sender] = tokens[_token][msg.sender] - _amount;
+
+        emit Withdraw(
+            _token,
+            msg.sender,
+            _amount,
+            tokens[_token][msg.sender]
+        );
     }
 
     function testWithdrawToken(address _token, uint256 _amount) public {

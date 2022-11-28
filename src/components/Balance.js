@@ -50,8 +50,37 @@ const Balance = () => {
   };
 
   const depositHandler = (e, token) => {
-    const transferType = "Deposit";
     e.preventDefault();
+    const transferType = "Deposit";
+    if (token.address === tokens[0].address) {
+      transferTokens(
+        provider,
+        exchange,
+        transferType,
+        token,
+        depositAmount1,
+        dispatch
+      );
+      setDepositAmount1(0);
+    }
+
+    if (token.address === tokens[1].address) {
+      transferTokens(
+        provider,
+        exchange,
+        transferType,
+        token,
+        depositAmount2,
+        dispatch
+      );
+      setDepositAmount2(0);
+    }
+  };
+
+  const withdrawHandler = (e, token) => {
+    e.preventDefault();
+    const transferType = "Withdrawl";
+    console.log("Withdrawl Clicked");
     if (token.address === tokens[0].address) {
       transferTokens(
         provider,
@@ -127,7 +156,13 @@ const Balance = () => {
             {exchangeBalances && exchangeBalances[0]}
           </p>
         </div>
-        <form onSubmit={(e) => depositHandler(e, tokens[0])}>
+        <form
+          onSubmit={
+            isDeposit
+              ? (e) => depositHandler(e, tokens[0])
+              : (e) => withdrawHandler(e, tokens[0])
+          }
+        >
           <label htmlFor="token0" />
           <input
             type="text"
@@ -167,7 +202,13 @@ const Balance = () => {
             {exchangeBalances && exchangeBalances[1]}
           </p>
         </div>
-        <form onSubmit={(e) => depositHandler(e, tokens[1])}>
+        <form
+          onSubmit={(e) =>
+            isDeposit
+              ? depositHandler(e, tokens[1])
+              : withdrawHandler(e, tokens[1])
+          }
+        >
           <label htmlFor="token1" />
           <input
             type="text"

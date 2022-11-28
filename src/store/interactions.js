@@ -85,6 +85,13 @@ export const subscribeToEvents = (exchange, dispatch) => {
       event: event,
     });
   });
+
+  exchange.on("Withdraw", (token, user, amount, balance, event) => {
+    dispatch({
+      type: "TRANSFER_SUCCESS",
+      event: event,
+    });
+  });
 };
 
 export const loadBalances = async (exchange, tokens, account, dispatch) => {
@@ -139,16 +146,26 @@ export const transferTokens = async (
     const amountToTransfer = ethers.utils.parseUnits(amount.toString(), 18);
     let result;
 
-    transaction = await token
-      .connect(signer)
-      .approve(exchange.address, amountToTransfer);
-    result = await transaction.wait();
+    if (transferType === "Deposit") {
+      transaction = await token
+        .connect(signer)
+        .approve(exchange.address, amountToTransfer);
+      result = await transaction.wait();
 
-    transaction = await exchange
-      .connect(signer)
-      .depositToken(token.address, amountToTransfer);
-    result = await transaction.wait();
-    return result
+      transaction = await exchange
+        .connect(signer)
+        .depositToken(token.address, amountToTransfer);
+      result = await transaction.wait();
+    } else {
+      console.log("calling another deposit accnt");
+
+      transaction = await exchange
+        .connect(signer)
+        .withdrawToken(token.address, amountToTransfer);
+      result = await transaction.wait();
+    }
+
+    return result;
   } catch (error) {
     dispatch({
       type: "TRANSFER_FAILED",
