@@ -54,10 +54,15 @@ const DEFAULT_EXCHANGE_STATE = {
   trasaction: {
     isSuccessful: false,
   },
-  events: []
+  allOrders: {
+    loaded: false,
+    data: [],
+  },
+  events: [],
 };
 
 export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
+  let index, data;
   switch (action.type) {
     case "EXCHANGE_LOADED":
       return {
@@ -110,6 +115,56 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
           isError: true,
         },
         transferInProgress: false,
+      };
+
+    // ORDERS
+    case "ORDER_REQUEST":
+      return {
+        ...state,
+        trasaction: {
+          transactionType: "Order",
+          isPending: true,
+          isSuccessful: false,
+        },
+        orderInProgress: true,
+      };
+
+    case "ORDER_SUCCESS":
+      // Prevent Duplicate Orders
+      index = state.allOrders.data.findIndex(
+        (order) => order.id === action.order.id
+      );
+
+      if (index === -1) {
+        data = [...state.allOrders.data, action.order];
+      } else {
+        data = state.allOrders.data;
+      }
+
+      return {
+        ...state,
+        allOrders: {
+          ...state.allOrders,
+          data, 
+        },
+        trasaction: {
+          transactionType: "Order",
+          isPending: false,
+          isSuccessful: true,
+        },
+        orderInProgress: false,
+        events: [action.event, ...state.events],
+      };
+    case "ORDER_FAILED":
+      return {
+        ...state,
+        trasaction: {
+          transactionType: "Order",
+          isPending: false,
+          isSuccessful: false,
+          isError: true,
+        },
+        orderInProgress: false,
       };
     default:
       return state;

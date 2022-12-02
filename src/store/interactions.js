@@ -92,6 +92,28 @@ export const subscribeToEvents = (exchange, dispatch) => {
       event: event,
     });
   });
+
+  exchange.on(
+    "Order",
+    (
+      id,
+      user,
+      tokenGet,
+      amountGet,
+      tokenGive,
+      amountGive,
+      timestamp,
+      event
+    ) => {
+      const order = event.args;
+
+      dispatch({
+        type: "ORDER_SUCCESS",
+        order,
+        event,
+      });
+    }
+  );
 };
 
 export const loadBalances = async (exchange, tokens, account, dispatch) => {
@@ -169,6 +191,76 @@ export const transferTokens = async (
   } catch (error) {
     dispatch({
       type: "TRANSFER_FAILED",
+    });
+  }
+};
+
+// Order 
+// Buy Order
+export const makeBuyOrder = async (
+  provider,
+  exchange,
+  tokens,
+  order,
+  dispatch
+) => {
+  const tokenGet = tokens[0].address;
+  const amountGet = ethers.utils.parseUnits(order.amount.toString(), 18);
+  const tokenGive = tokens[1].address;
+  const amountGive = ethers.utils.parseUnits((order.amount * order.price).toString(), 18);
+
+  dispatch({
+    type: "ORDER_REQUEST",
+  });
+
+  let transaction, result;
+
+  try {
+    const signer = await provider.getSigner();
+    transaction = await exchange
+      .connect(signer)
+      .makeOrder(tokenGet, amountGet, tokenGive, amountGive);
+
+    result = await transaction.wait();
+
+    return result;
+  } catch {
+    dispatch({
+      type: "ORDER_FAIL",
+    });
+  }
+};
+
+export const makeSellOrder = async (
+  provider,
+  exchange,
+  tokens,
+  order,
+  dispatch
+) => {
+  const tokenGet = tokens[1].address;
+  const amountGet = ethers.utils.parseUnits((order.amount * order.price).toString(), 18);
+  const tokenGive = tokens[0].address;
+  const amountGive = ethers.utils.parseUnits(order.amount.toString(), 18);
+
+  dispatch({
+    type: "ORDER_REQUEST",
+  });
+
+  let transaction, result;
+
+  try {
+    const signer = await provider.getSigner();
+    transaction = await exchange
+      .connect(signer)
+      .makeOrder(tokenGet, amountGet, tokenGive, amountGive);
+
+    result = await transaction.wait();
+
+    return result;
+  } catch {
+    dispatch({
+      type: "ORDER_FAIL",
     });
   }
 };

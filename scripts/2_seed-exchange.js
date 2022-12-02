@@ -16,20 +16,11 @@ async function main() {
 
   // Fetch network
   const { chainId } = await ethers.provider.getNetwork();
-  console.log(`Using chainID: ${chainId}`)
+  console.log(`Using chainID: ${chainId}`);
 
-  const NTST = await ethers.getContractAt(
-    "Token",
-    config[31337].NTST.address
-  );
-  const wETH = await ethers.getContractAt(
-    "Token",
-    config[31337].wETH.address
-  );
-  const wDAI = await ethers.getContractAt(
-    "Token",
-    config[31337].wDAI.address
-  );
+  const NTST = await ethers.getContractAt("Token", config[31337].NTST.address);
+  const wETH = await ethers.getContractAt("Token", config[31337].wETH.address);
+  const wDAI = await ethers.getContractAt("Token", config[31337].wDAI.address);
 
   console.log(`NTST fetched: ${NTST.address}`);
   console.log(`wETH fetched: ${wETH.address}`);
