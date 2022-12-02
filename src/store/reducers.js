@@ -70,6 +70,17 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
         loaded: true,
         contract: action.exchange,
       };
+
+    // ORDERS LOADED (CANCELLED, FILLED & ALL)
+    case 'ALL_ORDERS_LOADED':
+      return {
+        ...state,
+        allOrders: {
+          loaded: true,
+          data: action.allOrders
+        }
+      }
+
     case "EXCHANGE_TOKEN_1_BALANCE_LOADED":
       return {
         ...state,
@@ -132,7 +143,7 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
     case "ORDER_SUCCESS":
       // Prevent Duplicate Orders
       index = state.allOrders.data.findIndex(
-        (order) => order.id === action.order.id
+        (order) => order.id.toString() === action.order.id.toString()
       );
 
       if (index === -1) {

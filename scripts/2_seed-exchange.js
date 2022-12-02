@@ -37,7 +37,10 @@ async function main() {
   // Fetch sender and feeAddress / receiver
   const sender = accounts[0];
   const feeAddress = accounts[1];
-  const amount = tokens(10000);
+  const amount = tokens(100000);
+  const amountUser1 = tokens(10000);
+  const amountUser2 = tokens(10000);
+  const amountUser3 = tokens(10000);
   const amountGet = tokens(100);
   const amountGive = tokens(100);
 
@@ -61,14 +64,35 @@ async function main() {
   ////// Distribute tokens
   // Transfer token NTST from sender to user1
   let transaction, result;
-  transaction = await NTST.connect(sender).transfer(user1.address, amount);
+  transaction = await NTST.connect(sender).transfer(user1.address, amountUser1);
+  await transaction.wait();
+  console.log(
+    `Transfer ${amount} tokens from ${sender.address} to ${user1.address}`
+  );
+
+  // Transfer token NTST from sender to user2
+  transaction = await NTST.connect(sender).transfer(user2.address, amountUser2);
+  await transaction.wait();
+  console.log(
+    `Transfer ${amount} tokens from ${sender.address} to ${user2.address}`
+  );
+
+  // Transfer token NTST from sender to user3
+  transaction = await NTST.connect(sender).transfer(user3.address, amountUser3);
+  await transaction.wait();
+  console.log(
+    `Transfer ${amount} tokens from ${sender.address} to ${user3.address}`
+  );
+
+  // Transfer token wETH from sender to user1
+  transaction = await wETH.connect(sender).transfer(user1.address, amountUser1);
   await transaction.wait();
   console.log(
     `Transfer ${amount} tokens from ${sender.address} to ${user1.address}`
   );
 
   // Transfer token wETH from sender to user2
-  transaction = await wETH.connect(sender).transfer(user2.address, amount);
+  transaction = await wETH.connect(sender).transfer(user2.address, amountUser2);
   await transaction.wait();
   console.log(
     `Transfer ${amount} tokens from ${sender.address} to ${user2.address}`
@@ -87,12 +111,22 @@ async function main() {
   console.log(`Balance of wDAI user 3: ${await wDAI.balanceOf(user3.address)}`);
 
   ////// Approve tokens
-  // Approve tokens of user1
+  // Approve tokens NTST of user1
   transaction = await NTST.connect(user1).approve(exchange.address, amount);
   await transaction.wait();
   console.log(`Approved ${amount} tokens from ${user1.address}\n`);
 
-  // Approve tokens of user2
+  // Approve tokens wETH of user1
+  transaction = await wETH.connect(user1).approve(exchange.address, amount);
+  await transaction.wait();
+  console.log(`Approved ${amount} tokens from ${user1.address}\n`);
+
+  // Approve tokens NTST of user2
+  transaction = await NTST.connect(user2).approve(exchange.address, amount);
+  await transaction.wait();
+  console.log(`Approved ${amount} tokens from ${user2.address}\n`);
+
+  // Approve tokens wETH of user2
   transaction = await wETH.connect(user2).approve(exchange.address, amount);
   await transaction.wait();
   console.log(`Approved ${amount} tokens from ${user2.address}\n`);
@@ -106,16 +140,32 @@ async function main() {
   // User 1 deposit NTST to exchange
   transaction = await exchange
     .connect(user1)
-    .depositToken(NTST.address, amount);
+    .depositToken(NTST.address, amountUser1);
   await transaction.wait();
   console.log(`Deposited ${amount} NTST from ${user1.address}\n`);
 
+  // User 1 deposit wETH to exchange
+  transaction = await exchange
+    .connect(user1)
+    .depositToken(wETH.address, amountUser1);
+  await transaction.wait();
+  console.log(`Deposited ${amount} NTST from ${user1.address}\n`);
+
+  // User 2 deposit NTST to exchange
   transaction = await exchange
     .connect(user2)
-    .depositToken(wETH.address, amount);
+    .depositToken(NTST.address, amountUser2);
   await transaction.wait();
   console.log(`Deposited ${amount} wETH from ${user2.address}\n`);
 
+  // User 2 deposit wETH to exchange
+  transaction = await exchange
+    .connect(user2)
+    .depositToken(wETH.address, amountUser2);
+  await transaction.wait();
+  console.log(`Deposited ${amount} wETH from ${user2.address}\n`);
+
+  // User 3 deposit wDAI to exchange
   transaction = await exchange
     .connect(user3)
     .depositToken(wDAI.address, amount);
@@ -202,7 +252,7 @@ async function main() {
   for (let i = 1; i <= 10; i++) {
     transaction = await exchange
       .connect(user2)
-      .makeOrder(wDAI.address, tokens(10), wETH.address, tokens(i * 5));
+      .makeOrder(NTST.address, tokens(10), wETH.address, tokens(i * 5));
     result = await transaction.wait();
     console.log(`Made order from ${user2.address}\n`);
 
