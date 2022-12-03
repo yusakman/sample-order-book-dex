@@ -1,12 +1,32 @@
 import { createSelector } from "reselect";
-import { get, groupBy } from "lodash";
+import { get, groupBy, reject } from "lodash";
 import { ethers } from "ethers";
 import moment from "moment";
 
-const tokens = (state) => get(state, "tokens.contracts");
-const allOrders = (state) => get(state, "exchange.allOrders.data", []);
 const GREEN = "#25CEF8";
 const RED = "#F45353";
+const tokens = (state) => get(state, "tokens.contracts");
+const allOrders = (state) => get(state, "exchange.allOrders.data", []);
+const allCancelOrders = (state) => get(state, "exchange.allCancelOrders.data", [])
+const allFilledOrders = (state) => get(state, "exchange.allFilledOrders.data", [])
+
+const openOrders = (state) => {
+    const all = allOrders(state)
+    const filled = allFilledOrders(state)
+    const cancel = allCancelOrders(state)
+    
+    const filledExcluded = reject(all, (order) => {
+        const filledExclude = filled.some(o => o.id.toString() === order.id.toString())
+        return filledExclude
+    })
+
+    const cancelExcluded = reject(filledExcluded, (order) => {
+        const cancelExcluded = cancel.some(o => o.id.toString() === order.id.toString())
+        return cancelExcluded
+    })
+
+    return cancelExcluded
+}
 
 const decorateOrder = (order, tokens) => {
   let token0Amount, token1Amount;
@@ -35,7 +55,7 @@ const decorateOrder = (order, tokens) => {
 // ORDER BOOk
 
 export const orderBookSelector = createSelector(
-  allOrders,
+  openOrders,
   tokens,
   (orders, tokens) => {
     if (!tokens[0] || !tokens[1]) {
@@ -55,8 +75,23 @@ export const orderBookSelector = createSelector(
     // Decorate order
     orders = decorateOrderBookOrders(orders, tokens);
 
-    orders = groupBy(orders, 'orderType')
-    console.log(orders);
+    // Group orders by 'orderType'
+    orders = groupBy(orders, "orderType");
+
+    // Fetch buy orders
+    const buyOrders = get(orders, "buy", []);
+    
+    // Fetch sell orders
+    const sellOrders = get(orders, "sell", [])
+
+    // Sort buyOrders and sellOrders
+    orders = {
+      ...orders,
+      buyOrders: buyOrders.sort((a, b) => b.tokenPrice - a.tokenPrice),
+      sellOrders: sellOrders.sort((a,b) => b.tokenPrice - a.tokenPrice)
+    };
+
+    return orders;
   }
 );
 

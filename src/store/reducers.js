@@ -54,10 +54,19 @@ const DEFAULT_EXCHANGE_STATE = {
   trasaction: {
     isSuccessful: false,
   },
+  allCancelOrders: {
+    loaded: false,
+    data: [],
+  },
+  allFilledOrders: {
+    loaded: false,
+    data: [],
+  },
   allOrders: {
     loaded: false,
     data: [],
   },
+
   events: [],
 };
 
@@ -72,14 +81,32 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
       };
 
     // ORDERS LOADED (CANCELLED, FILLED & ALL)
-    case 'ALL_ORDERS_LOADED':
+    case "CANCEL_ORDERS_LOADED":
+      return {
+        ...state,
+        allCancelOrders: {
+          loaded: true,
+          data: action.allCancelOrders,
+        },
+      };
+
+    case "FILLED_ORDERS_LOADED":
+      return {
+        ...state,
+        allFilledOrders: {
+          loaded: true,
+          data: action.allFilledOrders,
+        },
+      };
+
+    case "ALL_ORDERS_LOADED":
       return {
         ...state,
         allOrders: {
           loaded: true,
-          data: action.allOrders
-        }
-      }
+          data: action.allOrders,
+        },
+      };
 
     case "EXCHANGE_TOKEN_1_BALANCE_LOADED":
       return {
@@ -156,7 +183,7 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
         ...state,
         allOrders: {
           ...state.allOrders,
-          data, 
+          data,
         },
         trasaction: {
           transactionType: "Order",
