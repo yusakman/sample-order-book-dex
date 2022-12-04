@@ -150,32 +150,35 @@ export const loadBalances = async (exchange, tokens, account, dispatch) => {
 };
 
 export const loadAllOrders = async (provider, exchange, dispatch) => {
-  const block = await provider.getBlockNumber()
+  const block = await provider.getBlockNumber();
 
   // Fetch cancel orders
-  const cancelOrderStream = await exchange.queryFilter('Cancel', 0, block)
-  const allCancelOrders = cancelOrderStream.map(event => event.args)
+  const cancelOrderStream = await exchange.queryFilter("Cancel", 0, block);
+  const allCancelOrders = cancelOrderStream.map((event) => event.args);
 
   dispatch({
-    type: 'CANCEL_ORDERS_LOADED', allCancelOrders
-  })
+    type: "CANCEL_ORDERS_LOADED",
+    allCancelOrders,
+  });
 
   // Fetch filled orders
-  const filledOrdersStream = await exchange.queryFilter('Trade', 0, block)
-  const allFilledOrders = filledOrdersStream.map(event => event.args)
+  const filledOrdersStream = await exchange.queryFilter("Trade", 0, block);
+  const allFilledOrders = filledOrdersStream.map((event) => event.args);
 
   dispatch({
-    type: 'FILLED_ORDERS_LOADED', allFilledOrders
-  })
+    type: "FILLED_ORDERS_LOADED",
+    allFilledOrders,
+  });
 
   //Fetch all orders
-  const orderStream = await exchange.queryFilter('Order', 0, block)
-  const allOrders = orderStream.map(event => event.args)
+  const orderStream = await exchange.queryFilter("Order", 0, block);
+  const allOrders = orderStream.map((event) => event.args);
 
   dispatch({
-    type: 'ALL_ORDERS_LOADED', allOrders
-  })
-}
+    type: "ALL_ORDERS_LOADED",
+    allOrders,
+  });
+};
 
 export const transferTokens = async (
   provider,
@@ -223,7 +226,7 @@ export const transferTokens = async (
   }
 };
 
-// Order 
+// Order
 // Buy Order
 export const makeBuyOrder = async (
   provider,
@@ -235,7 +238,10 @@ export const makeBuyOrder = async (
   const tokenGet = tokens[0].address;
   const amountGet = ethers.utils.parseUnits(order.amount.toString(), 18);
   const tokenGive = tokens[1].address;
-  const amountGive = ethers.utils.parseUnits((order.amount * order.price).toString(), 18);
+  const amountGive = ethers.utils.parseUnits(
+    (order.amount * order.price).toString(),
+    18
+  );
 
   dispatch({
     type: "ORDER_REQUEST",
@@ -267,7 +273,10 @@ export const makeSellOrder = async (
   dispatch
 ) => {
   const tokenGet = tokens[1].address;
-  const amountGet = ethers.utils.parseUnits((order.amount * order.price).toString(), 18);
+  const amountGet = ethers.utils.parseUnits(
+    (order.amount * order.price).toString(),
+    18
+  );
   const tokenGive = tokens[0].address;
   const amountGive = ethers.utils.parseUnits(order.amount.toString(), 18);
 
