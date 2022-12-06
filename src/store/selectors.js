@@ -3,7 +3,7 @@ import { get, groupBy, maxBy, minBy, reject } from "lodash";
 import { ethers } from "ethers";
 import moment from "moment";
 
-const GREEN = "#25CEF8";
+const GREEN = "#08f26e";
 const RED = "#F45353";
 const tokens = (state) => get(state, "tokens.contracts");
 const allOrders = (state) => get(state, "exchange.allOrders.data", []);
@@ -52,6 +52,65 @@ const decorateOrder = (order, tokens) => {
     tokenPrice: tokenPrice,
     formattedTimestamp: moment.unix(order.timestamp).format("h:mm:ssa d MMM D"),
   };
+};
+
+// FILLED ORDER
+export const filledOrderSelector = createSelector(
+  allFilledOrders,
+  tokens,
+  (orders, tokens) => {
+    if (!tokens[0] || !tokens[1]) {
+      return;
+    }
+
+    // Filters order by selected tokens
+    orders = orders.filter(
+      (o) =>
+        o.tokenGet === tokens[0].address || o.tokenGet === tokens[1].address
+    );
+    orders = orders.filter(
+      (o) =>
+        o.tokenGive === tokens[0].address || o.tokenGive === tokens[1].address
+    );
+
+    // Sorting
+    orders = orders.sort((a, b) => a.timestamp - b.timestamp);
+    orders = decorateFilledOrders(orders, tokens);
+    orders = orders.sort((a, b) => b.timestamp - a.timestamp);
+
+    return orders;
+  }
+);
+
+const decorateFilledOrders = (orders, tokens) => {
+  let previousOrder = orders[0];
+
+  return orders.map((order) => {
+    // Decorate each order
+    order = decorateOrder(order, tokens);
+    order = decorateFilledOrder(order, previousOrder);
+    previousOrder = order;
+    return order;
+  });
+};
+
+const decorateFilledOrder = (order, previousOrder) => {
+  return {
+    ...order,
+    tokenPriceClass: tokenPriceClass(order.tokenPrice, order.id, previousOrder),
+  };
+};
+
+const tokenPriceClass = (tokenPrice, orderId, previousOrder) => {
+  if (previousOrder.id === orderId) {
+    return GREEN;
+  }
+
+  if (previousOrder.tokenPrice <= tokenPrice) {
+    return GREEN;
+  } else {
+    return RED;
+  }
 };
 
 // ORDER BOOk

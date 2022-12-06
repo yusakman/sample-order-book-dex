@@ -64,7 +64,7 @@ function App() {
         <section className="exchange__section--right grid">
           <PriceChart></PriceChart>
           {/* Transaction  */}
-          {/* <Trades></Trades> */}
+          <Trades></Trades>
           <OrderBook></OrderBook>
         </section>
       </main>
