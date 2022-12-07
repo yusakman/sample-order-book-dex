@@ -6,6 +6,7 @@ import moment from "moment";
 const GREEN = "#08f26e";
 const RED = "#F45353";
 const tokens = (state) => get(state, "tokens.contracts");
+const account = (state) => get(state, "provider.account");
 const allOrders = (state) => get(state, "exchange.allOrders.data", []);
 const allCancelOrders = (state) =>
   get(state, "exchange.allCancelOrders.data", []);
@@ -28,6 +29,59 @@ const openOrders = (state) => {
   });
 
   return openOrders;
+};
+
+// MY OPEN ORDERS
+export const myOpenOrdersSelector = createSelector(
+  account,
+  tokens,
+  openOrders,
+  (account, tokens, orders) => {
+    if (!tokens[0] || !tokens[1]) {
+      return;
+    }
+
+    // Filter orders created by currency account
+    orders = orders.filter((o) => o.user === account);
+
+    // Filter orders by selected tokens
+    orders = orders.filter(
+      (o) =>
+        o.tokenGet === tokens[0].address || o.tokenGet === tokens[1].address
+    );
+    orders = orders.filter(
+      (o) =>
+        o.tokenGive === tokens[0].address || o.tokenGive === tokens[1].address
+    );
+
+    orders = decorateMyOpenOrders(orders, tokens);
+
+    // Descending
+    orders = orders.sort((a, b) => b.timestamp - a.timestamp);
+
+    console.log(orders, "deocrate my open orders");
+
+    return orders;
+  }
+);
+
+const decorateMyOpenOrders = (orders, tokens) => {
+  orders = orders.map((order) => {
+    order = decorateOrder(order, tokens);
+    order = decorateMyOpenOrder(order, tokens);
+    return order;
+  });
+
+  return orders
+};
+
+const decorateMyOpenOrder = (order, token) => {
+  let orderType = order.tokenGive === token[1].address ? "buy" : "sell";
+  return {
+    ...order,
+    orderType,
+    orderTypeClass: orderType === "buy" ? "GREEN" : "RED",
+  };
 };
 
 const decorateOrder = (order, tokens) => {
