@@ -31,6 +31,30 @@ const openOrders = (state) => {
   return openOrders;
 };
 
+const decorateOrder = (order, tokens) => {
+  let token0Amount, token1Amount;
+
+  if (order.tokenGive === tokens[1].address) {
+    token0Amount = order.amountGive;
+    token1Amount = order.amountGet;
+  } else {
+    token0Amount = order.amountGet;
+    token1Amount = order.amountGive;
+  }
+
+  let precision = 100000;
+  let tokenPrice = token1Amount / token0Amount;
+  tokenPrice = Math.round(tokenPrice * precision) / precision;
+
+  return {
+    ...order,
+    token0Amount: ethers.utils.formatUnits(token0Amount, "ether"),
+    token1Amount: ethers.utils.formatUnits(token1Amount, "ether"),
+    tokenPrice: tokenPrice,
+    formattedTimestamp: moment.unix(order.timestamp).format("h:mm:ssa d MMM D"),
+  };
+};
+
 // MY OPEN ORDERS
 export const myOpenOrdersSelector = createSelector(
   account,
@@ -70,7 +94,7 @@ const decorateMyOpenOrders = (orders, tokens) => {
     return order;
   });
 
-  return orders
+  return orders;
 };
 
 const decorateMyOpenOrder = (order, token) => {
@@ -82,31 +106,7 @@ const decorateMyOpenOrder = (order, token) => {
   };
 };
 
-const decorateOrder = (order, tokens) => {
-  let token0Amount, token1Amount;
-
-  if (order.tokenGive === tokens[1].address) {
-    token0Amount = order.amountGive;
-    token1Amount = order.amountGet;
-  } else {
-    token0Amount = order.amountGet;
-    token1Amount = order.amountGive;
-  }
-
-  let precision = 100000;
-  let tokenPrice = token1Amount / token0Amount;
-  tokenPrice = Math.round(tokenPrice * precision) / precision;
-
-  return {
-    ...order,
-    token0Amount: ethers.utils.formatUnits(token0Amount, "ether"),
-    token1Amount: ethers.utils.formatUnits(token1Amount, "ether"),
-    tokenPrice: tokenPrice,
-    formattedTimestamp: moment.unix(order.timestamp).format("h:mm:ssa d MMM D"),
-  };
-};
-
-// FILLED ORDER
+// ALL FILLED ORDER
 export const filledOrderSelector = createSelector(
   allFilledOrders,
   tokens,
@@ -137,13 +137,15 @@ export const filledOrderSelector = createSelector(
 const decorateFilledOrders = (orders, tokens) => {
   let previousOrder = orders[0];
 
-  return orders.map((order) => {
+  orders = orders.map((order) => {
     // Decorate each order
     order = decorateOrder(order, tokens);
     order = decorateFilledOrder(order, previousOrder);
     previousOrder = order;
     return order;
   });
+
+  return orders;
 };
 
 const decorateFilledOrder = (order, previousOrder) => {
@@ -165,7 +167,70 @@ const tokenPriceClass = (tokenPrice, orderId, previousOrder) => {
   }
 };
 
-// ORDER BOOk
+// MY FILLED ORDER
+export const myFilledOrderSelector = createSelector(
+  account,
+  tokens,
+  allFilledOrders,
+  (account, tokens, orders) => {
+    if (!tokens[0] || !tokens[1]) {
+      return;
+    }
+
+    // Filter orders created by currency account
+    orders = orders.filter((o) => o.user === account || o.creator === account);
+
+    // Filter orders by selected tokens
+    orders = orders.filter(
+      (o) =>
+        o.tokenGet === tokens[0].address || o.tokenGet === tokens[1].address
+    );
+    orders = orders.filter(
+      (o) =>
+        o.tokenGive === tokens[0].address || o.tokenGive === tokens[1].address
+    );
+
+    // Descending
+    orders = orders.sort((a, b) => b.timestamp - a.timestamp);
+
+    orders = decorateMyFilledOrders(orders, account, tokens);
+
+    console.log(orders, "In myFilledOrders");
+
+    return orders;
+  }
+);
+
+const decorateMyFilledOrders = (orders, account, tokens) => {
+  orders = orders.map((order) => {
+    order = decorateOrder(order, tokens);
+    order = decorateMyFilledOrder(order, account, tokens);
+    return order;
+  });
+
+  return orders;
+};
+
+const decorateMyFilledOrder = (order, account, token) => {
+  let orderType;
+  const myOrder = order.creator === account;
+
+  // If user created the order
+  if (myOrder) {
+    orderType = order.tokenGive === token[1].address ? "buy" : "sell";
+  } else {
+    orderType = order.tokenGive === token[1].address ? "sell" : "buy";
+  }
+
+  return {
+    ...order,
+    orderType,
+    orderTypeClass: orderType === "buy" ? "GREEN" : "RED",
+    orderSign: orderType === "buy" ? "+" : "-",
+  };
+};
+
+// ORDER BOOK
 
 export const orderBookSelector = createSelector(
   openOrders,
