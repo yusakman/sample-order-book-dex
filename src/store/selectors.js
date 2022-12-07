@@ -59,8 +59,6 @@ export const myOpenOrdersSelector = createSelector(
     // Descending
     orders = orders.sort((a, b) => b.timestamp - a.timestamp);
 
-    console.log(orders, "deocrate my open orders");
-
     return orders;
   }
 );

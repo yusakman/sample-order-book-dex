@@ -23,15 +23,15 @@ const Balance = () => {
   const [isDeposit, setIsDeposit] = useState(true);
 
   const depositRef = useRef(null);
-  const WithdralRef = useRef(null);
+  const withdrawlRef = useRef(null);
 
   const handleTab = (e) => {
     if (e.target.className === depositRef.current.className) {
       e.target.className = "tab tab--active";
-      WithdralRef.current.className = "tab";
+      withdrawlRef.current.className = "tab";
       setIsDeposit(true);
     }
-    if (e.target.className === WithdralRef.current.className) {
+    if (e.target.className === withdrawlRef.current.className) {
       e.target.className = "tab tab--active";
       depositRef.current.className = "tab";
       setIsDeposit(false);
@@ -124,7 +124,7 @@ const Balance = () => {
           >
             Deposit
           </button>
-          <button className="tab" onClick={handleTab} ref={WithdralRef}>
+          <button className="tab" onClick={handleTab} ref={withdrawlRef}>
             Withdraw
           </button>
         </div>
