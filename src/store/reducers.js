@@ -204,6 +204,56 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
         },
         orderInProgress: false,
       };
+
+    // CANCEL
+    case "CANCEL_REQUEST":
+      return {
+        ...state,
+        trasaction: {
+          transactionType: "Cancel",
+          isPending: true,
+          isSuccessful: false,
+        },
+        cancelInProgress: true,
+      };
+
+    case "CANCEL_SUCCESS":
+      // Prevent Duplicate Orders
+      index = state.allCancelOrders.data.findIndex(
+        (order) => order.id.toString() === action.order.id.toString()
+      );
+
+      if (index === -1) {
+        data = [...state.allCancelOrders.data, action.order];
+      } else {
+        data = state.allCancelOrders.data;
+      }
+
+      return {
+        ...state,
+        allCancelOrders: {
+          ...state.allCancelOrders,
+          data,
+        },
+        trasaction: {
+          transactionType: "Cancel",
+          isPending: false,
+          isSuccessful: true,
+        },
+        cancelInProgress: false,
+        events: [action.event, ...state.events],
+      };
+    case "CANCEL_FAILED":
+      return {
+        ...state,
+        trasaction: {
+          transactionType: "Cancel",
+          isPending: false,
+          isSuccessful: false,
+          isError: true,
+        },
+        cancelInProgress: false,
+      };
     default:
       return state;
   }

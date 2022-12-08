@@ -195,8 +195,6 @@ export const myFilledOrderSelector = createSelector(
 
     orders = decorateMyFilledOrders(orders, account, tokens);
 
-    console.log(orders, "In myFilledOrders");
-
     return orders;
   }
 );
