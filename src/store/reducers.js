@@ -204,6 +204,56 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
         },
         orderInProgress: false,
       };
+    
+    // FILL ORDER
+    case "FILL_ORDER_REQUEST":
+      return {
+        ...state,
+        trasaction: {
+          transactionType: "Trade",
+          isPending: true,
+          isSuccessful: false,
+        },
+        fillOrderInProgress: true,
+      };
+
+    case "FILL_ORDER_SUCCESS":
+      // Prevent Duplicate Orders
+      index = state.allFilledOrders.data.findIndex(
+        (order) => order.id.toString() === action.order.id.toString()
+      );
+
+      if (index === -1) {
+        data = [...state.allFilledOrders.data, action.order];
+      } else {
+        data = state.allFilledOrders.data;
+      }
+
+      return {
+        ...state,
+        allFilledOrders: {
+          ...state.allFilledOrders,
+          data,
+        },
+        trasaction: {
+          transactionType: "Trade",
+          isPending: false,
+          isSuccessful: true,
+        },
+        fillOrderInProgress: false,
+        events: [action.event, ...state.events],
+      };
+    case "FILL_ORDER_FAILED":
+      return {
+        ...state,
+        trasaction: {
+          transactionType: "Trade",
+          isPending: false,
+          isSuccessful: false,
+          isError: true,
+        },
+        fillOrderInProgress: false,
+      };
 
     // CANCEL
     case "CANCEL_REQUEST":

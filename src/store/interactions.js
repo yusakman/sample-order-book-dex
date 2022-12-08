@@ -136,6 +136,29 @@ export const subscribeToEvents = (exchange, dispatch) => {
       });
     }
   );
+
+  exchange.on(
+    "Trade",
+    (
+      id,
+      user,
+      tokenGet,
+      amountGet,
+      tokenGive,
+      amountGive,
+      creator,
+      timestamp,
+      event
+    ) => {
+      const order = event.args;
+
+      dispatch({
+        type: "FILL_ORDER_SUCCESS",
+        order,
+        event,
+      });
+    }
+  );
 };
 
 export const loadBalances = async (exchange, tokens, account, dispatch) => {
@@ -324,9 +347,30 @@ export const makeSellOrder = async (
   }
 };
 
+// Fill Order
+export const fillOrder = async (provider, exchange, order, dispatch) => {
+  dispatch({
+    type: "FILL_ORDER_REQUEST",
+  });
+
+  let transaction, result;
+
+  try {
+    const signer = await provider.getSigner();
+    transaction = await exchange.connect(signer).fillOrder(order.id);
+
+    result = await transaction.wait();
+
+    return result;
+  } catch {
+    dispatch({
+      type: "FILL_ORDER_FAILED",
+    });
+  }
+};
+
 // Cancel Order
 export const cancelOrder = async (provider, exchange, order, dispatch) => {
-
   dispatch({
     type: "CANCEL_REQUEST",
   });
