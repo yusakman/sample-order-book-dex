@@ -28,7 +28,6 @@ const Navbar = () => {
         },
       ],
     });
-    console.log(e.target.value);
   };
 
   return (

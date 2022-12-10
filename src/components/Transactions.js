@@ -34,7 +34,6 @@ const Transactions = () => {
   };
 
   const handleCancel = (order) => {
-    console.log("Cancel", order);
     if (!myOpenOrders) {
       return;
     }

@@ -6,12 +6,15 @@ import moment from "moment";
 const GREEN = "#08f26e";
 const RED = "#F45353";
 const tokens = (state) => get(state, "tokens.contracts");
+const events = (state) => get(state, "exchange.events");
 const account = (state) => get(state, "provider.account");
 const allOrders = (state) => get(state, "exchange.allOrders.data", []);
 const allCancelOrders = (state) =>
   get(state, "exchange.allCancelOrders.data", []);
 const allFilledOrders = (state) =>
   get(state, "exchange.allFilledOrders.data", []);
+
+// Open Orders
 
 const openOrders = (state) => {
   const all = allOrders(state);
@@ -31,6 +34,17 @@ const openOrders = (state) => {
   return openOrders;
 };
 
+// My Events
+export const myEventSelector = createSelector(
+  account,
+  events,
+  (account, events) => {
+    events = events.filter((e) => e.args.user === account);
+    return events;
+  }
+);
+
+// Decorate Order
 const decorateOrder = (order, tokens) => {
   let token0Amount, token1Amount;
 

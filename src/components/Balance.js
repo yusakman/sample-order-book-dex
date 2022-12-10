@@ -80,7 +80,6 @@ const Balance = () => {
   const withdrawHandler = (e, token) => {
     e.preventDefault();
     const transferType = "Withdrawl";
-    console.log("Withdrawl Clicked");
     if (token.address === tokens[0].address) {
       transferTokens(
         provider,
@@ -163,7 +162,7 @@ const Balance = () => {
               : (e) => withdrawHandler(e, tokens[0])
           }
         >
-          <label htmlFor="token0" />
+          <label htmlFor="token0">{symbols && symbols[0]} Amount</label>
           <input
             type="text"
             id="token0"
@@ -209,7 +208,7 @@ const Balance = () => {
               : withdrawHandler(e, tokens[1])
           }
         >
-          <label htmlFor="token1" />
+          <label htmlFor="token1">{symbols && symbols[1]} Amount</label>
           <input
             type="text"
             id="token1"

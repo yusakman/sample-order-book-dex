@@ -51,7 +51,7 @@ export const tokens = (state = DEFAULT_TOKEN_STATE, action) => {
 const DEFAULT_EXCHANGE_STATE = {
   loaded: false,
   contract: {},
-  trasaction: {
+  transaction: {
     isSuccessful: false,
   },
   allCancelOrders: {
@@ -125,7 +125,7 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
     case "TRANSFER_REQUEST":
       return {
         ...state,
-        trasaction: {
+        transaction: {
           transactionType: "Transfer",
           isPending: true,
           isSuccessful: false,
@@ -135,7 +135,7 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
     case "TRANSFER_SUCCESS":
       return {
         ...state,
-        trasaction: {
+        transaction: {
           transactionType: "Transfer",
           isPending: false,
           isSuccessful: true,
@@ -146,7 +146,7 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
     case "TRANSFER_FAILED":
       return {
         ...state,
-        trasaction: {
+        transaction: {
           transactionType: "Transfer",
           isPending: false,
           isSuccessful: false,
@@ -159,7 +159,7 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
     case "ORDER_REQUEST":
       return {
         ...state,
-        trasaction: {
+        transaction: {
           transactionType: "Order",
           isPending: true,
           isSuccessful: false,
@@ -185,7 +185,7 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
           ...state.allOrders,
           data,
         },
-        trasaction: {
+        transaction: {
           transactionType: "Order",
           isPending: false,
           isSuccessful: true,
@@ -196,7 +196,7 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
     case "ORDER_FAILED":
       return {
         ...state,
-        trasaction: {
+        transaction: {
           transactionType: "Order",
           isPending: false,
           isSuccessful: false,
@@ -209,7 +209,7 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
     case "FILL_ORDER_REQUEST":
       return {
         ...state,
-        trasaction: {
+        transaction: {
           transactionType: "Trade",
           isPending: true,
           isSuccessful: false,
@@ -235,7 +235,7 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
           ...state.allFilledOrders,
           data,
         },
-        trasaction: {
+        transaction: {
           transactionType: "Trade",
           isPending: false,
           isSuccessful: true,
@@ -246,7 +246,7 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
     case "FILL_ORDER_FAILED":
       return {
         ...state,
-        trasaction: {
+        transaction: {
           transactionType: "Trade",
           isPending: false,
           isSuccessful: false,
@@ -259,7 +259,7 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
     case "CANCEL_REQUEST":
       return {
         ...state,
-        trasaction: {
+        transaction: {
           transactionType: "Cancel",
           isPending: true,
           isSuccessful: false,
@@ -285,7 +285,7 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
           ...state.allCancelOrders,
           data,
         },
-        trasaction: {
+        transaction: {
           transactionType: "Cancel",
           isPending: false,
           isSuccessful: true,
@@ -296,7 +296,7 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
     case "CANCEL_FAILED":
       return {
         ...state,
-        trasaction: {
+        transaction: {
           transactionType: "Cancel",
           isPending: false,
           isSuccessful: false,

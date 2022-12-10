@@ -8,12 +8,6 @@ const Order = () => {
   const provider = useSelector((state) => state.provider.connection);
   const exchange = useSelector((state) => state.exchange.contract);
   const tokens = useSelector((state) => state.tokens.contracts);
-  // const account = useSelector((state) => state.provider.account);
-  // const walletBalances = useSelector((state) => state.tokens.balances);
-  // const exchangeBalances = useSelector((state) => state.exchange.balances);
-  // const orderInProgress = useSelector(
-  //   (state) => state.exchange.orderInProgress
-  // );
 
   const buyRef = useRef(null);
   const sellRef = useRef(null);
@@ -46,7 +40,6 @@ const Order = () => {
 
   const buyHandler = (e) => {
     e.preventDefault();
-    console.log("buy handler");
     makeBuyOrder(provider, exchange, tokens, { amount, price }, dispatch);
     setAmount(0);
     setPrice(0);

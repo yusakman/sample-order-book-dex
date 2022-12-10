@@ -255,8 +255,6 @@ export const transferTokens = async (
         .depositToken(token.address, amountToTransfer);
       result = await transaction.wait();
     } else {
-      console.log("calling another deposit accnt");
-
       transaction = await exchange
         .connect(signer)
         .withdrawToken(token.address, amountToTransfer);
