@@ -16,6 +16,18 @@
         
     },
     "5": {
+        "exchange": {
+            "address": "0xFfC8A1843919FA4b2dd7476bDFaD10069084f5a6"
+        },
+        "NTST": {
+            "address": "0x831C9E9461C24D92C59DFf9e2EB2bCf6F87901b8"
+        },
+        "wETH": {
+            "address": "0x16B49eAF94d2c4D0630D05Cc18Af72C42504dB18"
+        },
+        "wDAI": {
+            "address": "0x46DfCEE20D8DB7a3edE50C61af7D99719eb06648"
+        },
         "explorerURL": "https://goerli.etherscan.io/"
     }
 }

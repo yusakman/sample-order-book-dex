@@ -6,10 +6,10 @@ async function main() {
   // Fetch contract to deploy
   const Token = await ethers.getContractFactory("Token")
   const Exchange = await ethers.getContractFactory("Exchange")
-
+  const feeAccount = "0xD5bB7b414cdd212B994756C063aEC29A4DA05b5A";
   // Fetch accounts
-  const accounts = await ethers.getSigners();
-  console.log(`Account fetched: \n${accounts[0].address}\n${accounts[1].address}\n`)
+  // const accounts = await ethers.getSigners();
+  // console.log(`Account fetched: \n${accounts[0].address}\n${accounts[1].address}\n`)
 
   // Deploy contracts
   const ntst = await Token.deploy('New Token Smoke Test', 'NTST', '1000000')
@@ -24,7 +24,7 @@ async function main() {
   await wdai.deployed()
   console.log(`wDAI Deployed to: ${wdai.address}`)
 
-  const exchange = await Exchange.deploy(accounts[1].address, 10)
+  const exchange = await Exchange.deploy(feeAccount, 10)
   await exchange.deployed()
   console.log(`Exchange Deployed to: ${exchange.address}`)
 }
